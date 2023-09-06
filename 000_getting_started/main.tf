@@ -18,3 +18,4 @@ terraform {
 locals {
   project_name = "Vikram"
 }
+
