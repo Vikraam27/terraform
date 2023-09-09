@@ -68,16 +68,27 @@ resource "aws_key_pair" "deployer" {
   public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDUoukShYVoFc0eOCBBMjAY0hemQSt5Jt+oVvjSb0PChn45msNnuhchso+TM0Skfi9RUdVMbQl5KIiNVRA9oqY6doElNTwl9MNpKi75ZWHjel4VbJimSiU6q4kVCAnm8U4gMzcCytuuOe2qduEQf4ltWYX3vS4DhZm8m4Gatn3IPdSTU+e1EsVN36NWCyBt+wadZp3qZVqAnOuUKsTmEsZO8QFWbjeK3RO5Ozo+YvLCf27DL6GbrEf+gqBA1sXgkBMDXwFZ5ExuVpJMXjpNoPGzeHqDLNBrMViYLEcSUzRjUwdVv7PMUxHORRlI7DM1dIO8plGdTnzhCauOawRbuzWqNmPE7PquvrvT0JcfDJFSVTNW+OFhD84+fV5KwTz5GxPUzAzloK5KL+2lhpf9ZL1k5dTP1QeBTzwb/8IowGpZ8zELazafik/XYeb5FsOHc+2SWQ4RVhMgPaKm2UPxYLN7onlA8j408G4dk471q31iQnRTcuU4v4YgzO6lCrT3bus= vikram@vikrams-MacBook-Air.local"
 }
 
-
-
 resource "aws_instance" "my_server" {
   ami                    = "ami-053b0d53c279acc90"
   instance_type          = "t2.micro"
   key_name               = aws_key_pair.deployer.key_name
   vpc_security_group_ids = [aws_security_group.sg_my_server.id]
   user_data              = templatefile("${path.module}/userdata.yaml", {})
+
   provisioner "local-exec" {
     command = "echo ${self.private_ip} >> private_ip.txt"
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "echo ${self.private_ip} >> /home/ubuntu/private_ip.txt"
+    ]
+    connection {
+      type        = "ssh"
+      user        = "ubuntu"
+      host        = self.public_ip
+      private_key = file("/Users/vikram/.ssh/terraform")
+    }
   }
   tags = {
     "Name" = "Myserver"
