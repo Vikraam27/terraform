@@ -4,3 +4,4 @@ packages:
 runcmd:
   - sudo systemctl start nginx
   - sudo systemctl enable nginx
+  
